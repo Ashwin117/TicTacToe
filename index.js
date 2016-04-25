@@ -23,8 +23,7 @@ var server = http.createServer(
 	socket.sockets.on('connection', clientSetup)
 })
 
-function clientSetup(user) {
-	let client = user;
+function clientSetup(client) {
 
 	client.on('disconnect', () => {
 		let playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
