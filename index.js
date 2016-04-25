@@ -9,11 +9,11 @@ const playerFactory = require('./lib/playerFactory');
 
 const port = process.env.PORT || 8080;
 let players = [];
-let socket;
+var socket;
 
 
-const server = http.createServer(
-	ecstatic({ root: path.resolve(__dirname, '../public') })
+var server = http.createServer(
+	ecstatic({ root: path.resolve(__dirname, './public') })
 ).listen(port, (err) => {
 	if (err) {
 		throw err
@@ -21,16 +21,18 @@ const server = http.createServer(
 
 	socket = io.listen(server);
 	socket.sockets.on('connection', clientSetup)
-});
+})
 
-function clientSetup(client) {
-	console.log('Player 1 has entered: ' + client.id);
+function clientSetup(user) {
+	let client = user;
 
 	client.on('disconnect', () => {
-		console.log(players);
-		const playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
+		debugger;
+		let playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
 
 		if (playerToBeRemoved) {
+			let index = players.indexOf(playerToBeRemoved);
+			players.splice(index, 1);
 			console.log('Player has been removed');
 		} else {
 			console.log('Could not find player');
@@ -38,7 +40,18 @@ function clientSetup(client) {
 	});
 
 	client.on('new player', () => {
+		if (players.length < 2) {
+			let newPlayer = playerFactory.player(client.id);
+			console.log('Player of #' + newPlayer.id + ' has entered');
 
+			client.broadcast.emit('new player', {id: newPlayer.id})
+
+			if (players.length === 1) {
+				client.emit('new player', {id: players[0].id});
+			}
+
+			players.push(newPlayer);
+		}
 	});
 
 	client.on('turn player', () => {
