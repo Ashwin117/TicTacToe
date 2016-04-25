@@ -27,7 +27,6 @@ function clientSetup(user) {
 	let client = user;
 
 	client.on('disconnect', () => {
-		debugger;
 		let playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
 
 		if (playerToBeRemoved) {
