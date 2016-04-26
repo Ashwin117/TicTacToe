@@ -20,7 +20,8 @@ var server = http.createServer(
 	}
 
 	socket = io.listen(server);
-	socket.sockets.on('connection', clientSetup)
+	socket.sockets.on('connection', clientSetup);
+	console.log('Listening on localhost:' + port);
 })
 
 function clientSetup(client) {
@@ -29,6 +30,7 @@ function clientSetup(client) {
 		let playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
 
 		if (playerToBeRemoved) {
+			playerFactory.checkAndDisableTurn(players[0], players[1]);
 			playerFactory.popMarksInUse(playerToBeRemoved);
 			playerFactory.removePlayer(players, playerToBeRemoved);
 			console.log('Player has been removed');
@@ -39,13 +41,14 @@ function clientSetup(client) {
 
 	client.on('new player', () => {
 		if (players.length < 2) {
-			let newPlayer = playerFactory.player(client.id);
+			let newPlayer = playerFactory.player(client);
 			console.log('Player of id ' + newPlayer.id + ' has entered');
-
-			client.emit('new player', {id: newPlayer.id, mark: newPlayer.mark})
 
 			players.push(newPlayer);
 			playerFactory.checkAndEnableTurn(players[0], players[1]);
+			players.forEach((player) => {
+				player.client.emit('new player', {id: player.id, mark: player.mark, turn: player.turn});
+			});
 		}
 	});
 

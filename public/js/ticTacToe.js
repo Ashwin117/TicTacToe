@@ -34,11 +34,13 @@ function create () {
 
 let setEventHandlers = () => {
 	game.input.onDown.add((pointer) => {
-		for (let tile in tilesList) {
-			if (tilesList[tile].contains(pointer.x,pointer.y) && usedTiles.indexOf(tilesList[tile]) < 0) {
-				game.add.sprite(tilesList[tile].x+window.buildCoordinates[player.mark+'OFFSET'], tilesList[tile].y+window.buildCoordinates[player.mark+'OFFSET'], player.mark+'Mark');
-				usedTiles.push(tilesList[tile]);
-				socket.emit('turn player', {tile: tile, mark: player.mark});
+		if (player.turn){
+			for (let tile in tilesList) {
+				if (tilesList[tile].contains(pointer.x,pointer.y) && usedTiles.indexOf(tilesList[tile]) < 0) {
+					game.add.sprite(tilesList[tile].x+window.buildCoordinates[player.mark+'OFFSET'], tilesList[tile].y+window.buildCoordinates[player.mark+'OFFSET'], player.mark+'Mark');
+					usedTiles.push(tilesList[tile]);
+					socket.emit('turn player', {tile: tile, mark: player.mark});
+				}
 			}
 		}
 	});
