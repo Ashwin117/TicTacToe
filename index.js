@@ -40,19 +40,19 @@ function clientSetup(client) {
 	client.on('new player', () => {
 		if (players.length < 2) {
 			let newPlayer = playerFactory.player(client.id);
-			console.log('Player of #' + newPlayer.id + ' has entered');
+			console.log('Player of id ' + newPlayer.id + ' has entered');
 
-			client.broadcast.emit('new player', {id: newPlayer.id})
-
-			if (players.length === 1) {
-				client.emit('new player', {id: players[0].id});
-			}
+			client.emit('new player', {id: newPlayer.id, mark: newPlayer.mark})
 
 			players.push(newPlayer);
 		}
 	});
 
-	client.on('turn player', () => {
-
+	client.on('turn player', (data) => {
+		players.forEach((player) => {
+			if (client.id !== player.id) {
+				client.broadcast.emit('turn player', {tile: data.tile, id: player.id});
+			}
+		});
 	});
 }
