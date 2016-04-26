@@ -13,6 +13,7 @@ let usedTiles = [];
 function preload () {
 	game.load.image('grid', 'assets/grid.jpg');
 	game.load.image('xMark', 'assets/xMark.jpg');
+	game.load.image('oMark', 'assets/oMark.jpg');
 }
 
 function create () {
@@ -26,20 +27,24 @@ function create () {
 		tilesList.push(tile);
 	}
 
+	setEventHandlers();
+
+	setSocketHandlers();
+}
+
+let setEventHandlers = () => {
 	game.input.onDown.add((pointer) => {
 		for (let tile in tilesList) {
 			if (tilesList[tile].contains(pointer.x,pointer.y) && usedTiles.indexOf(tilesList[tile]) < 0) {
-				game.add.sprite(tilesList[tile].x+window.buildCoordinates.OFFSET, tilesList[tile].y+window.buildCoordinates.OFFSET, player.mark+'Mark');
+				game.add.sprite(tilesList[tile].x+window.buildCoordinates[player.mark+'OFFSET'], tilesList[tile].y+window.buildCoordinates[player.mark+'OFFSET'], player.mark+'Mark');
 				usedTiles.push(tilesList[tile]);
 				socket.emit('turn player', {tile: tile, mark: player.mark});
 			}
 		}
-	})
-
-	setEventHandlers();
+	});
 }
 
-let setEventHandlers = () => {
+let setSocketHandlers = () => {
   	socket.on('connect', () => {
   		console.log('Connected to socket server');
 
@@ -53,7 +58,7 @@ let setEventHandlers = () => {
 
 	socket.on('turn player', (data) => {
 		if (tilesList) {
-			game.add.sprite(tilesList[data.tile].x + window.buildCoordinates.OFFSET, tilesList[data.tile].y+window.buildCoordinates.OFFSET, 'xMark');
+			game.add.sprite(tilesList[data.tile].x+window.buildCoordinates[data.mark+'OFFSET'], tilesList[data.tile].y+window.buildCoordinates[data.mark+'OFFSET'], data.mark+'Mark');
 			usedTiles.push(tilesList[data.tile]);
 		}
 	});

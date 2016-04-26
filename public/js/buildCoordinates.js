@@ -1,6 +1,7 @@
 
 window.buildCoordinates = {
-	OFFSET: 10,
+	xOFFSET: 10,
+	oOFFSET: 0,
 	row1col1: {
 		x: 0,
 		y: 0

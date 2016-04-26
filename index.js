@@ -29,8 +29,8 @@ function clientSetup(client) {
 		let playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
 
 		if (playerToBeRemoved) {
-			let index = players.indexOf(playerToBeRemoved);
-			players.splice(index, 1);
+			playerFactory.popMarksInUse(playerToBeRemoved);
+			playerFactory.removePlayer(players, playerToBeRemoved);
 			console.log('Player has been removed');
 		} else {
 			console.log('Could not find player');
@@ -45,14 +45,12 @@ function clientSetup(client) {
 			client.emit('new player', {id: newPlayer.id, mark: newPlayer.mark})
 
 			players.push(newPlayer);
+			playerFactory.checkAndEnableTurn(players[0], players[1]);
 		}
 	});
 
 	client.on('turn player', (data) => {
-		players.forEach((player) => {
-			if (client.id !== player.id) {
-				client.broadcast.emit('turn player', {tile: data.tile, id: player.id});
-			}
-		});
+		let player = playerFactory.getPlayerById(players, client.id);
+		client.broadcast.emit('turn player', {tile: data.tile, id: player.id, mark: player.mark});
 	});
 }
