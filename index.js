@@ -25,15 +25,16 @@ var server = http.createServer(
 })
 
 function clientSetup(client) {
-
 	client.on('disconnect', () => {
 		let playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
 
 		if (playerToBeRemoved) {
 			playerFactory.checkAndDisableTurn(players[0], players[1]);
 			playerFactory.popMarksInUse(playerToBeRemoved);
+			console.log('Player of id ' + playerToBeRemoved.id + 'has been removed');
 			playerFactory.removePlayer(players, playerToBeRemoved);
-			console.log('Player has been removed');
+
+			client.broadcast.emit('end game');
 		} else {
 			console.log('Could not find player');
 		}
