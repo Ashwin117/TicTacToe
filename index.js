@@ -59,7 +59,6 @@ function clientSetup(client) {
 	});
 
 	client.on('end game', (data) => {
-		debugger;
-		socket.sockets.emit('end game', {prefix: data.prefix});
+		socket.sockets.emit('end game', {line: data.line});
 	});
 }

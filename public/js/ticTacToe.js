@@ -18,6 +18,8 @@ function preload () {
 	game.load.image('oMark', 'assets/oMark.jpg');
 	game.load.image('vLine', 'assets/vLine.jpg');
 	game.load.image('hLine', 'assets/hLine.jpg');
+	game.load.image('rDiag', 'assets/rDiag.jpg');
+	game.load.image('lDiag', 'assets/lDiag.jpg');
 }
 
 function create () {
@@ -102,17 +104,26 @@ let setSocketHandlers = () => {
 	});
 
 	socket.on('end game', (data) => {
-		renderLine(data.prefix);
+		renderLine(data.line);
 
-		function renderLine(prefix) {
-			let index = prefix[3];
-			if (prefix.indexOf('row') > -1) {
+		function renderLine(line) {
+			if (line.indexOf('row') > -1) {
+				let index = line[3];
 				player.turn = false;
 				lines.push(game.add.sprite(0, window.offsets['lineOFFSET'+index], 'hLine'));
 			}
-			if (prefix.indexOf('col') > -1) {
+			if (line.indexOf('col') > -1) {
+				let index = line[3];
 				player.turn = false;
 				lines.push(game.add.sprite(window.offsets['lineOFFSET'+index], 0, 'vLine'));
+			}
+			if (line === 'lDiag') {
+				player.turn = false;
+				lines.push(game.add.sprite(0, 0, 'lDiag'));
+			}
+			if (line === 'rDiag') {
+				player.turn = false;
+				lines.push(game.add.sprite(0, window.offsets.diagOFFSET, 'rDiag'));
 			}
 		}
 	});
@@ -121,14 +132,40 @@ let setSocketHandlers = () => {
 let checkForWin = () => {
 	let colList = ['col1', 'col2', 'col3'];
 	let rowList = ['row1', 'row2', 'row3'];
+	let diagonal1 = ['row1col1', 'row2col2', 'row3col3'];
+	let diagonal2 = ['row3col1', 'row2col2', 'row1col3'];
 
+	if (checkDiagonalWin(diagonal1)) {
+		socket.emit('end game', {line: 'lDiag'});
+	}
+	if (checkDiagonalWin(diagonal2)) {
+		socket.emit('end game', {line: 'rDiag'});
+	}
 	for (let i=0; i<rowList.length; i++) {
 		if (checkColOrRowWin(rowList[i], 0)) {
-			socket.emit('end game', {prefix: rowList[i]})
+			socket.emit('end game', {line: rowList[i]});
 		}
 		if (checkColOrRowWin(colList[i], 4)) {
-			socket.emit('end game', {prefix: colList[i]})
+			socket.emit('end game', {line: colList[i]});
 		}
+	}
+
+	function checkDiagonalWin(diagonal) {
+		let mark;
+		let colCounter = 0;
+
+		for (let i=0; i < diagonal.length; i++) {
+			for (let key in tilesLib) {
+				if(tilesLib[key].coord === diagonal[i] && (!mark || mark === tilesLib[key].mark)) {
+					colCounter++;
+					mark = tilesLib[key].mark;
+				}
+			}
+		}
+		if (colCounter === 3) {
+			return true;
+		}
+		return false;
 	}
 
 	function checkColOrRowWin(prefix, index) {

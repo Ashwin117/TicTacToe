@@ -2,6 +2,7 @@
 window.offsets = {
 	xOFFSET: 10,
 	oOFFSET: 0,
+	diagOFFSET: 30,
 	lineOFFSET1: 60,
 	lineOFFSET2: 190,
 	lineOFFSET3: 315
