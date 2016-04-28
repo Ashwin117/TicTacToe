@@ -22,7 +22,7 @@ let server = http.createServer(
 
 	socket = io.listen(server);
 	socket.sockets.on('connection', clientSetup);
-	console.log('Listening on localhost:' + port);
+	console.log(`Listening on port:${port}`);
 })
 
 function clientSetup(client) {
@@ -33,14 +33,14 @@ function clientSetup(client) {
 		if (playerToBeRemoved) {
 			clientFactory.checkAndDisableTurn(players[0], players[1]);
 			clientFactory.popMarksInUse(playerToBeRemoved);
-			console.log('Player of id ' + playerToBeRemoved.id + 'has been removed');
+			console.log(`Player of id ${playerToBeRemoved.id} has been removed`);
 			clientFactory.removeClient(players, playerToBeRemoved);
 
 			tilesLib = {};
 			socket.sockets.emit('clear game');
 		} 
 		if (spectatorToBeRemoved) {
-			console.log('Spectator of id ' + spectatorToBeRemoved.id + 'has been removed');
+			console.log(`Spectator of id ${spectatorToBeRemoved.id} has been removed`);
 			clientFactory.removeClient(spectators, spectatorToBeRemoved);
 		} 
 		if (!playerToBeRemoved && !spectatorToBeRemoved) {
@@ -51,7 +51,7 @@ function clientSetup(client) {
 	client.on('new player', () => {
 		if (players.length < 2) {
 			let newPlayer = clientFactory.player(client);
-			console.log('Player of id ' + newPlayer.id + ' has entered');
+			console.log(`Player of id ${newPlayer.id} has entered`);
 			players.push(newPlayer);
 			clientFactory.checkAndEnableTurn(players[0], players[1]);
 			players.forEach((player) => {
@@ -59,7 +59,7 @@ function clientSetup(client) {
 			});
 		} else {
 			let newSpectator = clientFactory.spectator(client);
-			console.log('Spectator of id ' + newSpectator.id + ' has entered');
+			console.log(`Spectator of id ${newSpectator.id} has entered`);
 			spectators.push(newSpectator);
 			newSpectator.client.emit('new spectator', {id: newSpectator.id, tilesLib });
 		}
