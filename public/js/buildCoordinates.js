@@ -1,7 +1,13 @@
 
-window.buildCoordinates = {
+window.offsets = {
 	xOFFSET: 10,
 	oOFFSET: 0,
+	lineOFFSET1: 60,
+	lineOFFSET2: 190,
+	lineOFFSET3: 315
+}
+
+window.buildCoordinates = {
 	row1col1: {
 		x: 0,
 		y: 0

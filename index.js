@@ -34,7 +34,7 @@ function clientSetup(client) {
 			console.log('Player of id ' + playerToBeRemoved.id + 'has been removed');
 			playerFactory.removePlayer(players, playerToBeRemoved);
 
-			client.broadcast.emit('end game');
+			socket.sockets.emit('clear game');
 		} else {
 			console.log('Could not find player');
 		}
@@ -55,6 +55,11 @@ function clientSetup(client) {
 
 	client.on('turn player', (data) => {
 		let player = playerFactory.getPlayerById(players, client.id);
-		client.broadcast.emit('turn player', {tile: data.tile, id: player.id, mark: player.mark});
+		client.broadcast.emit('turn player', {key: data.key, id: player.id, mark: player.mark});
+	});
+
+	client.on('end game', (data) => {
+		debugger;
+		socket.sockets.emit('end game', {prefix: data.prefix});
 	});
 }
