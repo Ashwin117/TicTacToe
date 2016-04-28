@@ -5,14 +5,15 @@ const http = require('http');
 const path = require('path');
 const ecstatic = require('ecstatic');
 const io = require('socket.io');
-const playerFactory = require('./lib/playerFactory');
+const clientFactory = require('./lib/clientFactory');
 
 const port = process.env.PORT || 8080;
 let players = [];
-var socket;
+let spectators = [];
+let socket;
 
 
-var server = http.createServer(
+let server = http.createServer(
 	ecstatic({ root: path.resolve(__dirname, './public') })
 ).listen(port, (err) => {
 	if (err) {
@@ -26,35 +27,45 @@ var server = http.createServer(
 
 function clientSetup(client) {
 	client.on('disconnect', () => {
-		let playerToBeRemoved = playerFactory.getPlayerById(players, client.id);
+		let playerToBeRemoved = clientFactory.getClientById(players, client.id);
+		let spectatorToBeRemoved = clientFactory.getClientById(spectators, client.id);
 
 		if (playerToBeRemoved) {
-			playerFactory.checkAndDisableTurn(players[0], players[1]);
-			playerFactory.popMarksInUse(playerToBeRemoved);
+			clientFactory.checkAndDisableTurn(players[0], players[1]);
+			clientFactory.popMarksInUse(playerToBeRemoved);
 			console.log('Player of id ' + playerToBeRemoved.id + 'has been removed');
-			playerFactory.removePlayer(players, playerToBeRemoved);
+			clientFactory.removeClient(players, playerToBeRemoved);
 
 			socket.sockets.emit('clear game');
-		} else {
+		} 
+		else if (spectatorToBeRemoved) {
+			console.log('Spectator of id ' + spectatorToBeRemoved.id + 'has been removed');
+			clientFactory.removeClient(spectators, spectatorToBeRemoved);
+		} 
+		else {
 			console.log('Could not find player');
 		}
 	});
 
 	client.on('new player', () => {
 		if (players.length < 2) {
-			let newPlayer = playerFactory.player(client);
+			let newPlayer = clientFactory.player(client);
 			console.log('Player of id ' + newPlayer.id + ' has entered');
-
 			players.push(newPlayer);
-			playerFactory.checkAndEnableTurn(players[0], players[1]);
+			clientFactory.checkAndEnableTurn(players[0], players[1]);
 			players.forEach((player) => {
 				player.client.emit('new player', {id: player.id, mark: player.mark, turn: player.turn});
 			});
+		} else {
+			let newSpectator = clientFactory.spectator(client);
+			console.log('Spectator of id ' + newSpectator.id + ' has entered');
+			spectators.push(newSpectator);
+			newSpectator.client.emit('new spectator', {id: newSpectator.id});
 		}
 	});
 
 	client.on('turn player', (data) => {
-		let player = playerFactory.getPlayerById(players, client.id);
+		let player = clientFactory.getClientById(players, client.id);
 		client.broadcast.emit('turn player', {key: data.key, id: player.id, mark: player.mark});
 	});
 

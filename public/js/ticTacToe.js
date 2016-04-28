@@ -7,6 +7,7 @@ let game = new Phaser.Game(375, 375, Phaser.AUTO, '',
 
 let socket;
 let player;
+let spectator;
 let tilesList = [];
 let tilesLib = [];
 let usedTiles = [];
@@ -49,7 +50,7 @@ function create () {
 
 let setEventHandlers = () => {
 	game.input.onDown.add((pointer) => {
-		if (player.turn){
+		if (player && player.turn){
 			for (let key in tilesList) {
 				if (tilesList[key].tile.contains(pointer.x,pointer.y) && usedTiles.indexOf(tilesList[key].tile) < 0 ) {
 					let markSprite = game.add.sprite(tilesList[key].tile.x+window.offsets[player.mark+'OFFSET'], tilesList[key].tile.y+window.offsets[player.mark+'OFFSET'], player.mark+'Mark');
@@ -100,6 +101,13 @@ let setSocketHandlers = () => {
 			});
 			checkForWin();
 		}
+	});
+
+	socket.on('new spectator', (data) => {
+		spectator = data;
+		console.log('Spectator of id ' + data.id + ' has connected');
+
+
 	});
 
 	socket.on('clear game', () => {
