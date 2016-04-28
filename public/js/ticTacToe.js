@@ -88,7 +88,7 @@ let setSocketHandlers = () => {
 	});
 
 	socket.on('turn player', (data) => {
-		if (tilesList) {
+		if (tilesList && player) {
 			let markSprite = game.add.sprite(tilesList[data.key].tile.x+window.offsets[data.mark+'OFFSET'], tilesList[data.key].tile.y+window.offsets[data.mark+'OFFSET'], data.mark+'Mark');
 			player.turn = true;
 			usedTiles.push(tilesList[data.key].tile);
