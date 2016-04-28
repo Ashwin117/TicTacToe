@@ -1,3 +1,5 @@
+let buildCoordinates = require('./buildCoordinates');
+
 let game = new Phaser.Game(375, 375, Phaser.AUTO, '', 
  	{ 
 		preload,
@@ -34,7 +36,7 @@ function create () {
 	socket = io.connect();
 	game.add.tileSprite(0, 0, 375, 375, 'grid');
 
-	let coordMap = window.buildCoordinates;
+	let coordMap = buildCoordinates.coordinates;
 
 	for (let key in coordMap) {
 		let tile = new Phaser.Rectangle(coordMap[key].x, coordMap[key].y, 125, 125);
@@ -54,7 +56,7 @@ let setEventHandlers = () => {
 		if (player && player.turn){
 			for (let key in tilesList) {
 				if (tilesList[key].tile.contains(pointer.x,pointer.y) && usedTiles.indexOf(tilesList[key].tile) < 0 ) {
-					let markSprite = game.add.sprite(tilesList[key].tile.x+window.offsets[player.mark+'OFFSET'], tilesList[key].tile.y+window.offsets[player.mark+'OFFSET'], player.mark+'Mark');
+					let markSprite = game.add.sprite(tilesList[key].tile.x+buildCoordinates.offsets[player.mark+'OFFSET'], tilesList[key].tile.y+buildCoordinates.offsets[player.mark+'OFFSET'], player.mark+'Mark');
 					player.turn = false;
 					usedTiles.push(tilesList[key].tile);
 					tilesLib.push({
@@ -91,7 +93,7 @@ let setSocketHandlers = () => {
 
 	socket.on('turn player', (data) => {
 		if (tilesList) {
-			let markSprite = game.add.sprite(tilesList[data.key].tile.x+window.offsets[data.mark+'OFFSET'], tilesList[data.key].tile.y+window.offsets[data.mark+'OFFSET'], data.mark+'Mark');
+			let markSprite = game.add.sprite(tilesList[data.key].tile.x+buildCoordinates.offsets[data.mark+'OFFSET'], tilesList[data.key].tile.y+buildCoordinates.offsets[data.mark+'OFFSET'], data.mark+'Mark');
 			if (player) {
 				player.turn = true;
 			} else {
@@ -113,11 +115,13 @@ let setSocketHandlers = () => {
 	socket.on('new spectator', (data) => {
 		spectator = data;
 		console.log('Spectator of id ' + data.id + ' has connected');
-		let coordMap = window.buildCoordinates;
+		let coordMap = buildCoordinates.coordinates;
 
 		let libMap = data.tilesLib;
 		for (let key in libMap) {
-			game.add.sprite(coordMap[key].x+window.offsets[libMap[key]+'OFFSET'], coordMap[key].y+window.offsets[libMap[key]+'OFFSET'],libMap[key]+'Mark');
+			tilesLib.push ({
+				markSprite: game.add.sprite(coordMap[key].x+buildCoordinates.offsets[libMap[key]+'OFFSET'], coordMap[key].y+buildCoordinates.offsets[libMap[key]+'OFFSET'],libMap[key]+'Mark')
+			});
 		}
 		game.add.sprite(160, 160, 'spectator');
 	});
@@ -153,14 +157,14 @@ let setSocketHandlers = () => {
 				if (player) {
 					player.turn = false;
 				}
-				lines.push(game.add.sprite(0, window.offsets['lineOFFSET'+index], 'hLine'));
+				lines.push(game.add.sprite(0, buildCoordinates.offsets['lineOFFSET'+index], 'hLine'));
 			}
 			if (line.indexOf('col') > -1) {
 				let index = line[3];
 				if (player) {
 					player.turn = false;
 				}
-				lines.push(game.add.sprite(window.offsets['lineOFFSET'+index], 0, 'vLine'));
+				lines.push(game.add.sprite(buildCoordinates.offsets['lineOFFSET'+index], 0, 'vLine'));
 			}
 			if (line === 'lDiag') {
 				if (player) {
@@ -172,7 +176,7 @@ let setSocketHandlers = () => {
 				if (player) {
 					player.turn = false;
 				}
-				lines.push(game.add.sprite(0, window.offsets.diagOFFSET, 'rDiag'));
+				lines.push(game.add.sprite(0, buildCoordinates.offsets.diagOFFSET, 'rDiag'));
 			}
 		}
 	});
