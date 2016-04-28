@@ -12,6 +12,9 @@ let tilesLib = [];
 let usedTiles = [];
 let lines = [];
 
+let win;
+let lose;
+
 function preload () {
 	game.load.image('grid', 'assets/grid.jpg');
 	game.load.image('xMark', 'assets/xMark.jpg');
@@ -20,6 +23,9 @@ function preload () {
 	game.load.image('hLine', 'assets/hLine.jpg');
 	game.load.image('rDiag', 'assets/rDiag.jpg');
 	game.load.image('lDiag', 'assets/lDiag.jpg');
+
+	game.load.image('win', 'assets/win.jpg');
+	game.load.image('lose', 'assets/lose.jpg');
 }
 
 function create () {
@@ -70,8 +76,15 @@ let setSocketHandlers = () => {
   	});
 
   	socket.on('new player', (data) => {
+  		if (!player) {
+  			console.log('Player connected:', data.id);
+  		}
   		player = data;
-  		console.log('New player connected:', player.id);
+  		if (!player.turn) {
+  			console.log('Waiting for opponent player...');
+  		} else {
+  			console.log('A new challenger has arrived');
+  		}
 	});
 
 	socket.on('turn player', (data) => {
@@ -96,6 +109,12 @@ let setSocketHandlers = () => {
 		}
 		if (lines && lines instanceof Array) {
 			lines.forEach((line) => line.kill());
+		}
+		if (win) {
+			win.kill();
+		}
+		if (lose) {
+			lose.kill();
 		}
 
 		tilesLib = [];
@@ -127,6 +146,14 @@ let setSocketHandlers = () => {
 			}
 		}
 	});
+
+	socket.on('winner', () => {
+		win = game.add.sprite(100, 100, 'win');
+	});
+
+	socket.on('loser', () => {
+		lose = game.add.sprite(100, 100, 'lose');
+	});
 }
 
 let checkForWin = () => {
@@ -136,16 +163,20 @@ let checkForWin = () => {
 	let diagonal2 = ['row3col1', 'row2col2', 'row1col3'];
 
 	if (checkDiagonalWin(diagonal1)) {
+		console.log('You win!');
 		socket.emit('end game', {line: 'lDiag'});
 	}
 	if (checkDiagonalWin(diagonal2)) {
+		console.log('You win!');
 		socket.emit('end game', {line: 'rDiag'});
 	}
 	for (let i=0; i<rowList.length; i++) {
 		if (checkColOrRowWin(rowList[i], 0)) {
+			console.log('You win!');
 			socket.emit('end game', {line: rowList[i]});
 		}
 		if (checkColOrRowWin(colList[i], 4)) {
+			console.log('You win!');
 			socket.emit('end game', {line: colList[i]});
 		}
 	}
