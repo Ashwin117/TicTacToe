@@ -11,7 +11,7 @@ const port = process.env.PORT || 8080;
 let players = [];
 let spectators = [];
 let socket;
-
+let tilesLib = {};
 
 let server = http.createServer(
 	ecstatic({ root: path.resolve(__dirname, './public') })
@@ -36,13 +36,14 @@ function clientSetup(client) {
 			console.log('Player of id ' + playerToBeRemoved.id + 'has been removed');
 			clientFactory.removeClient(players, playerToBeRemoved);
 
+			tilesLib = {};
 			socket.sockets.emit('clear game');
 		} 
-		else if (spectatorToBeRemoved) {
+		if (spectatorToBeRemoved) {
 			console.log('Spectator of id ' + spectatorToBeRemoved.id + 'has been removed');
 			clientFactory.removeClient(spectators, spectatorToBeRemoved);
 		} 
-		else {
+		if (!playerToBeRemoved && !spectatorToBeRemoved) {
 			console.log('Could not find player');
 		}
 	});
@@ -60,24 +61,28 @@ function clientSetup(client) {
 			let newSpectator = clientFactory.spectator(client);
 			console.log('Spectator of id ' + newSpectator.id + ' has entered');
 			spectators.push(newSpectator);
-			newSpectator.client.emit('new spectator', {id: newSpectator.id});
+			newSpectator.client.emit('new spectator', {id: newSpectator.id, tilesLib });
 		}
 	});
 
 	client.on('turn player', (data) => {
 		let player = clientFactory.getClientById(players, client.id);
+		tilesLib[data.coord] = data.mark;
 		client.broadcast.emit('turn player', {key: data.key, id: player.id, mark: player.mark});
 	});
 
 	client.on('end game', (data) => {
 		socket.sockets.emit('end game', {line: data.line});
 
-		players.forEach((player) => {
-			if (client.id === player.client.id) {
-				player.client.emit('loser');
-			} else {
-				player.client.emit('winner');
-			}
-		});
+		let spectatorsIDs = spectators.map((spectator) => spectator.id);
+		if (spectatorsIDs.indexOf(client.id) < 0) {
+			players.forEach((player) => {
+				if (client.id === player.client.id) {
+					player.client.emit('loser');
+				} else {
+					player.client.emit('winner');
+				}
+			});
+		}
 	});
 }

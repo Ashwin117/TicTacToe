@@ -27,6 +27,7 @@ function preload () {
 
 	game.load.image('win', 'assets/win.jpg');
 	game.load.image('lose', 'assets/lose.jpg');
+	game.load.image('spectator', 'assets/spectator.jpg');
 }
 
 function create () {
@@ -62,7 +63,7 @@ let setEventHandlers = () => {
 						mark: player.mark,
 						markSprite
 					});
-					socket.emit('turn player', {key, mark: player.mark});
+					socket.emit('turn player', {key, coord: tilesList[key].coord, mark: player.mark});
 				}
 			}
 		}
@@ -89,9 +90,15 @@ let setSocketHandlers = () => {
 	});
 
 	socket.on('turn player', (data) => {
-		if (tilesList && player) {
+		if (tilesList) {
 			let markSprite = game.add.sprite(tilesList[data.key].tile.x+window.offsets[data.mark+'OFFSET'], tilesList[data.key].tile.y+window.offsets[data.mark+'OFFSET'], data.mark+'Mark');
-			player.turn = true;
+			if (player) {
+				player.turn = true;
+			} else {
+				if (tilesList[data.key].coord === 'row2col2') {
+					game.add.sprite(160, 160, 'spectator');
+				}
+			}
 			usedTiles.push(tilesList[data.key].tile);
 			tilesLib.push({
 				usedTile: tilesList[data.key].tile,
@@ -106,12 +113,19 @@ let setSocketHandlers = () => {
 	socket.on('new spectator', (data) => {
 		spectator = data;
 		console.log('Spectator of id ' + data.id + ' has connected');
+		let coordMap = window.buildCoordinates;
 
-
+		let libMap = data.tilesLib;
+		for (let key in libMap) {
+			game.add.sprite(coordMap[key].x+window.offsets[libMap[key]+'OFFSET'], coordMap[key].y+window.offsets[libMap[key]+'OFFSET'],libMap[key]+'Mark');
+		}
+		game.add.sprite(160, 160, 'spectator');
 	});
 
 	socket.on('clear game', () => {
-		player.turn = false;
+		if (player) {
+			player.turn = false;
+		}
 		for (let tile in tilesLib) {
 			tilesLib[tile].markSprite.kill();
 		}
@@ -136,20 +150,28 @@ let setSocketHandlers = () => {
 		function renderLine(line) {
 			if (line.indexOf('row') > -1) {
 				let index = line[3];
-				player.turn = false;
+				if (player) {
+					player.turn = false;
+				}
 				lines.push(game.add.sprite(0, window.offsets['lineOFFSET'+index], 'hLine'));
 			}
 			if (line.indexOf('col') > -1) {
 				let index = line[3];
-				player.turn = false;
+				if (player) {
+					player.turn = false;
+				}
 				lines.push(game.add.sprite(window.offsets['lineOFFSET'+index], 0, 'vLine'));
 			}
 			if (line === 'lDiag') {
-				player.turn = false;
+				if (player) {
+					player.turn = false;
+				}
 				lines.push(game.add.sprite(0, 0, 'lDiag'));
 			}
 			if (line === 'rDiag') {
-				player.turn = false;
+				if (player) {
+					player.turn = false;
+				}
 				lines.push(game.add.sprite(0, window.offsets.diagOFFSET, 'rDiag'));
 			}
 		}
@@ -171,20 +193,16 @@ let checkForWin = () => {
 	let diagonal2 = ['row3col1', 'row2col2', 'row1col3'];
 
 	if (checkDiagonalWin(diagonal1)) {
-		console.log('You win!');
 		socket.emit('end game', {line: 'lDiag'});
 	}
 	if (checkDiagonalWin(diagonal2)) {
-		console.log('You win!');
 		socket.emit('end game', {line: 'rDiag'});
 	}
 	for (let i=0; i<rowList.length; i++) {
 		if (checkColOrRowWin(rowList[i], 0)) {
-			console.log('You win!');
 			socket.emit('end game', {line: rowList[i]});
 		}
 		if (checkColOrRowWin(colList[i], 4)) {
-			console.log('You win!');
 			socket.emit('end game', {line: colList[i]});
 		}
 	}
