@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "browserify -t [ babelify --presets [es2015] ] public/js/ticTacToe.js > public/dist/bundle.js",
-    "test": "istanbul cover _mocha -- --compilers js:babel-core/register test/**/*.js",
+    "test": "mocha --require babel-core/register",
+    "cover": "istanbul cover _mocha -- --compilers js:babel-core/register test/*",
     "start": "node ."
   },
   "author": "Ashwin Sundar",
@@ -16,7 +17,8 @@
     "chai": "^3.5.0",
     "istanbul": "^1.0.0-alpha.2",
     "mocha": "^2.4.5",
-    "rewire": "^2.5.1"
+    "rewire": "^2.5.1",
+    "socket.io-client": "^1.4.5"
   },
   "dependencies": {
     "babel-preset-stage-1": "^6.1.18",
