@@ -13,7 +13,7 @@ let spectators = [];
 let socket;
 let tilesLib = {};
 
-let server = http.createServer(
+const server = http.createServer(
 	ecstatic({ root: path.resolve(__dirname, './public') })
 ).listen(port, (err) => {
 	if (err) {
@@ -26,12 +26,14 @@ let server = http.createServer(
 })
 
 function clientSetup(client) {
-	client.on('disconnect', () => {
+
+	const onDisconnect = () => {
 		let playerToBeRemoved = clientFactory.getClientById(players, client.id);
 		let spectatorToBeRemoved = clientFactory.getClientById(spectators, client.id);
 
 		if (playerToBeRemoved) {
-			clientFactory.checkAndDisableTurn(players[0], players[1]);
+			clientFactory.checkAndDisableTurn(players[0]);
+			clientFactory.checkAndDisableTurn(players[1]);
 			clientFactory.popMarksInUse(playerToBeRemoved);
 			console.log(`Player of id ${playerToBeRemoved.id} has been removed`);
 			clientFactory.removeClient(players, playerToBeRemoved);
@@ -46,9 +48,9 @@ function clientSetup(client) {
 		if (!playerToBeRemoved && !spectatorToBeRemoved) {
 			console.log('Could not find player');
 		}
-	});
+	}
 
-	client.on('new player', () => {
+	const onNewPlayer = () => {
 		if (players.length < 2) {
 			let newPlayer = clientFactory.player(client);
 			console.log(`Player of id ${newPlayer.id} has entered`);
@@ -63,15 +65,15 @@ function clientSetup(client) {
 			spectators.push(newSpectator);
 			newSpectator.client.emit('new spectator', {id: newSpectator.id, tilesLib });
 		}
-	});
+	}
 
-	client.on('turn player', (data) => {
+	const onTurnPlayer = (data) => {
 		let player = clientFactory.getClientById(players, client.id);
 		tilesLib[data.coord] = data.mark;
 		client.broadcast.emit('turn player', {key: data.key, id: player.id, mark: player.mark});
-	});
+	}
 
-	client.on('end game', (data) => {
+	const onEndGame = (data) => {
 		socket.sockets.emit('end game', {line: data.line});
 
 		let spectatorsIDs = spectators.map((spectator) => spectator.id);
@@ -84,5 +86,13 @@ function clientSetup(client) {
 				}
 			});
 		}
-	});
+	}
+
+	client.on('disconnect', onDisconnect);
+
+	client.on('new player', onNewPlayer);
+
+	client.on('turn player', onTurnPlayer);
+
+	client.on('end game', onEndGame);
 }
