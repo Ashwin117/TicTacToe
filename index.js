@@ -74,17 +74,23 @@ function clientSetup(client) {
 	}
 
 	const onEndGame = (data) => {
-		socket.sockets.emit('end game', {line: data.line});
-
-		let spectatorsIDs = spectators.map((spectator) => spectator.id);
-		if (spectatorsIDs.indexOf(client.id) < 0) {
+		if (data.line === 'catsGame') {
 			players.forEach((player) => {
-				if (client.id === player.client.id) {
-					player.client.emit('loser');
-				} else {
-					player.client.emit('winner');
-				}
+				player.client.emit('catsGame');
 			});
+		} else {
+			socket.sockets.emit('end game', {line: data.line});
+
+			let spectatorsIDs = spectators.map((spectator) => spectator.id);
+			if (spectatorsIDs.indexOf(client.id) < 0) {
+				players.forEach((player) => {
+					if (client.id === player.client.id) {
+						player.client.emit('loser');
+					} else {
+						player.client.emit('winner');
+					}
+				});
+			}
 		}
 	}
 

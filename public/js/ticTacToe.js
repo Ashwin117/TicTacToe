@@ -17,6 +17,7 @@ let lines = [];
 
 let win;
 let lose;
+let draw;
 
 function preload () {
 	game.load.image('grid', 'assets/grid.jpg');
@@ -29,6 +30,7 @@ function preload () {
 
 	game.load.image('win', 'assets/win.jpg');
 	game.load.image('lose', 'assets/lose.jpg');
+	game.load.image('catsGame', 'assets/catsGame.jpg');
 	game.load.image('spectator', 'assets/spectator.jpg');
 }
 
@@ -88,6 +90,8 @@ const setSocketHandlers = () => {
 	socket.on('winner', () => win = game.add.sprite(100, 100, 'win'));
 
 	socket.on('loser', () => lose = game.add.sprite(100, 100, 'lose'));
+
+	socket.on('catsGame', () => draw = game.add.sprite(100, 100, 'catsGame'));
 }
 
 const onConnect = () => {
@@ -125,7 +129,9 @@ const onTurnPlayer = (data) => {
 			mark: data.mark,
 			markSprite
 		});
-		checkForWin();
+		if (player) {
+			checkForWin();
+		}
 	}
 
 	function addSpectatorSigil() {
@@ -135,23 +141,27 @@ const onTurnPlayer = (data) => {
 	}
 
 	function checkForWin() {
-		let colList = ['col1', 'col2', 'col3'];
-		let rowList = ['row1', 'row2', 'row3'];
-		let diagonal1 = ['row1col1', 'row2col2', 'row3col3'];
-		let diagonal2 = ['row3col1', 'row2col2', 'row1col3'];
+		if (usedTiles.length === 9) {
+			socket.emit('end game', {line: 'catsGame'})
+		} else {
+			let colList = ['col1', 'col2', 'col3'];
+			let rowList = ['row1', 'row2', 'row3'];
+			let diagonal1 = ['row1col1', 'row2col2', 'row3col3'];
+			let diagonal2 = ['row3col1', 'row2col2', 'row1col3'];
 
-		if (checkDiagonalWin(diagonal1)) {
-			socket.emit('end game', {line: 'lDiag'});
-		}
-		if (checkDiagonalWin(diagonal2)) {
-			socket.emit('end game', {line: 'rDiag'});
-		}
-		for (let i=0; i<rowList.length; i++) {
-			if (checkColOrRowWin(rowList[i], 0)) {
-				socket.emit('end game', {line: rowList[i]});
+			if (checkDiagonalWin(diagonal1)) {
+				socket.emit('end game', {line: 'lDiag'});
 			}
-			if (checkColOrRowWin(colList[i], 4)) {
-				socket.emit('end game', {line: colList[i]});
+			if (checkDiagonalWin(diagonal2)) {
+				socket.emit('end game', {line: 'rDiag'});
+			}
+			for (let i=0; i<rowList.length; i++) {
+				if (checkColOrRowWin(rowList[i], 0)) {
+					socket.emit('end game', {line: rowList[i]});
+				}
+				if (checkColOrRowWin(colList[i], 4)) {
+					socket.emit('end game', {line: colList[i]});
+				}
 			}
 		}
 
@@ -223,6 +233,9 @@ const onClearGame = () => {
 	}
 	if (lose) {
 		lose.kill();
+	}
+	if (draw) {
+		draw.kill();
 	}
 
 	tilesLib = [];
