@@ -11,4 +11,6 @@ Here are the two commands to start this game after cloning this repo. Please use
 	> npm start
 ```
 
+You can run `> npm test` as this repo has tested a lib test file for 100% code coverage
+
 This repo allows two players to play TicTacToe. Any additional entries into the localhost of this game will act as a spectator.
