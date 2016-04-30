@@ -77,13 +77,7 @@ function clientSetup(client) {
 		} else {
 			socket.sockets.emit('end game', {line: data.line});
 
-			let isSpectator = false;
-			spectators.forEach((spectator) => {
-				if (client.id.includes(spectator.id)) {
-					isSpectator = true;
-				}
-			});
-			if (!isSpectator) {
+			if (!checkForSpectator()) {
 				players.forEach((player) => {
 					if (client.id.indexOf(player.client.id) > -1) {
 						player.client.emit('loser');
@@ -91,6 +85,16 @@ function clientSetup(client) {
 						player.client.emit('winner');
 					}
 				});
+			}
+
+			function checkForSpectator() {
+				let isSpectator = false;
+				spectators.forEach((spectator) => {
+					if (client.id.includes(spectator.id)) {
+						isSpectator = true;
+					}
+				});
+				return isSpectator;
 			}
 		}
 	}
