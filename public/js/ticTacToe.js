@@ -91,7 +91,7 @@ const setSocketHandlers = () => {
 
 	socket.on('loser', () => lose = game.add.sprite(100, 100, 'lose'));
 
-	socket.on('catsGame', () => draw = game.add.sprite(100, 100, 'catsGame'));
+	socket.on('cats game', () => draw = game.add.sprite(100, 100, 'catsGame'));
 }
 
 const onConnect = () => {
