@@ -14,3 +14,10 @@ Here are the two commands to start this game after cloning this repo. I recommen
 You can run `> npm run cover` or `> npm test`as this repo has tested for 100% code coverage for server side code
 
 This repo allows two players to play TicTacToe. Any additional entries into the localhost of this game will act as a spectator.
+
+
+###Cool features of this game###
+1. Uses ES6 for writing code as smoothly as possible.
+1. Uses `babel` and `browserify` and to compile client side code to common js and display `bundle.js`
+1. Uses `phaser` as Javascript game engine
+1. Uses `sinon`, `rewire`, and `mocha` for server side unit testing along with `istanbul` for looking at code coverage
