@@ -109,7 +109,7 @@ const onNewPlayer = (data) => {
 	if (!player.turn) {
 		console.log('Waiting for opponent player...');
 	} else {
-		console.log('A new challenger has arrived');
+		console.log('Connection established with another player');
 	}
 }
 
