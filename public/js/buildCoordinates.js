@@ -1,7 +1,7 @@
 
 module.exports = {
 	offsets: {
-		xOFFSET: 10,
+		xOFFSET: 25,
 		oOFFSET: 0,
 		diagOFFSET: 30,
 		lineOFFSET1: 60,
