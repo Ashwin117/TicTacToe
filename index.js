@@ -15,11 +15,7 @@ let tilesLib = {};
 
 const server = http.createServer(
 	ecstatic({ root: path.resolve(__dirname, './public') })
-).listen(port, (err) => {
-	if (err) {
-		throw err
-	}
-
+).listen(port, () => {
 	socket = io.listen(server);
 	socket.sockets.on('connection', clientSetup);
 	console.log(`Listening on port:${port}`);

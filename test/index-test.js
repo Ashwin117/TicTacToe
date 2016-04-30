@@ -13,14 +13,6 @@ const options = {
 };
 
 describe('Index', () => {
-	it('server error', () => {
-		try {
-			const client1 = io.connect('saduf', options);
-		} catch(ex) {
-			console.log(ex);
-		}
-	});
-
 	describe('onNewPlayer test', () => {
 		it('should acknowledge a client has connected', (done) => {
 			const client1 = io.connect(socketURL, options);
