@@ -141,30 +141,34 @@ const onTurnPlayer = (data) => {
 	}
 
 	function checkForWin() {
-		if (usedTiles.length === 9) {
-			socket.emit('end game', {line: 'catsGame'})
-		} else {
-			let colList = ['col1', 'col2', 'col3'];
-			let rowList = ['row1', 'row2', 'row3'];
-			let diagonal1 = ['row1col1', 'row2col2', 'row3col3'];
-			let diagonal2 = ['row3col1', 'row2col2', 'row1col3'];
+		let colList = ['col1', 'col2', 'col3'];
+		let rowList = ['row1', 'row2', 'row3'];
+		let diagonal1 = ['row1col1', 'row2col2', 'row3col3'];
+		let diagonal2 = ['row3col1', 'row2col2', 'row1col3'];
+		let hasWinner = false;
 
-			if (checkDiagonalWin(diagonal1)) {
-				socket.emit('end game', {line: 'lDiag'});
+		if (checkDiagonalWin(diagonal1)) {
+			hasWinner = true;
+			socket.emit('end game', {line: 'lDiag'});
+		}
+		if (checkDiagonalWin(diagonal2)) {
+			hasWinner = true;
+			socket.emit('end game', {line: 'rDiag'});
+		}
+		for (let i=0; i<rowList.length; i++) {
+			if (checkColOrRowWin(rowList[i], 0)) {
+				hasWinner = true;
+				socket.emit('end game', {line: rowList[i]});
 			}
-			if (checkDiagonalWin(diagonal2)) {
-				socket.emit('end game', {line: 'rDiag'});
-			}
-			for (let i=0; i<rowList.length; i++) {
-				if (checkColOrRowWin(rowList[i], 0)) {
-					socket.emit('end game', {line: rowList[i]});
-				}
-				if (checkColOrRowWin(colList[i], 4)) {
-					socket.emit('end game', {line: colList[i]});
-				}
+			if (checkColOrRowWin(colList[i], 4)) {
+				hasWinner = true;
+				socket.emit('end game', {line: colList[i]});
 			}
 		}
 
+		if (!hasWinner && usedTiles.length === 9) {
+			socket.emit('end game', {line: 'catsGame'})
+		}
 		function checkDiagonalWin(diagonal) {
 			let mark;
 			let colCounter = 0;
